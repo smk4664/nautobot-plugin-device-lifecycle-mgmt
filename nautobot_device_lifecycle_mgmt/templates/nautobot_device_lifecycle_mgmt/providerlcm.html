@@ -47,15 +47,19 @@
                 <td>Portal URL</td>
                 <td><a href="{{ object.portal_url }}">{{ object.portal_url }}</a></td>
             </tr>
-            <tr>
-                <td>Comments</td>
-                <td>
-                    {% if object.comments %}
-                    <pre>{{ object.comments }}</pre>
-                    {% else %} &mdash; {% endif %}
-                </td>
-            </tr>
         </table>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <strong>Comments</strong>
+        </div>
+        <div class="panel-body rendered-markdown">
+            {% if object.comments %}
+                {{ object.comments|render_markdown }}
+            {% else %}
+                <span class="text-muted">None</span>
+            {% endif %}
+        </div>
     </div>
 {% endblock %}
 

@@ -749,8 +749,8 @@ class CVELCM(PrimaryModel):
     """CVELCM is a model representation of a cve vulnerability record."""
 
     name = models.CharField(max_length=16, blank=False, unique=True)
-    published_date = models.DateField(verbose_name="Published Date")
-    link = models.URLField()
+    published_date = models.DateField(verbose_name="Published Date", blank=True, null=True)
+    link = models.URLField(blank=True, null=True)
     status = StatusField(
         null=True,
         blank=True,

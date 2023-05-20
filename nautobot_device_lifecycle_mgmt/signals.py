@@ -70,6 +70,40 @@ def post_migrate_create_relationships(sender, apps=global_apps, **kwargs):  # py
         _Relationship.objects.get_or_create(name=relationship_dict["name"], defaults=relationship_dict)
 
 
+def post_migrate_create_jobhook(sender, apps=global_apps, **kwargs):  # pylint: disable=unused-argument
+    """Callback function for post_migrate() -- create Jobhooks."""
+    # pylint: disable=invalid-name
+    ContentType = apps.get_model("contenttypes", "ContentType")
+    JobHook = apps.get_model("extras", "JobHook")
+    Job = apps.get_model("extras", "Job")
+    CVELCM = sender.get_model("CVELCM")
+    gpt_job = Job.objects.get(job_class_name="CVEChatGPTJobHookReceiver")
+    gpt_job.enabled = True
+    gpt_job.save()
+    JobHook.objects.update_or_create(
+        name="CVE ChatGPT JobHook",
+        defaults=dict(type_create=True, job=gpt_job)
+    ),
+    hook = JobHook.objects.get(name="CVE ChatGPT JobHook")
+
+    obj_type = ContentType.objects.get_for_model(CVELCM)
+    hook.content_types.set([obj_type])
+
+
+def post_migrate_create_manufacturers_platforms_and_softwares(sender, apps=global_apps, **kwargs):
+    Manufacturer = apps.get_model("dcim", "Manufacturer")
+    Platform = apps.get_model("dcim", "Platform")
+    SoftwareLCM = apps.get_model("nautobot_device_lifecycle_mgmt", "SoftwareLCM")
+    cisco, _ = Manufacturer.objects.get_or_create(name="cisco")
+    ios, _ = Platform.objects.get_or_create(name="Cisco IOS", manufacturer=cisco)
+    ios_xe, _ = Platform.objects.get_or_create(name="Cisco IOS XE", manufacturer=cisco)
+
+    SoftwareLCM.objects.get_or_create(version="15.3(1)T", defaults=dict(device_platform=ios))
+    SoftwareLCM.objects.get_or_create(version="15.6(1)S", defaults=dict(device_platform=ios))
+    SoftwareLCM.objects.get_or_create(version="3.13.6S", defaults=dict(device_platform=ios_xe))
+    SoftwareLCM.objects.get_or_create(version="16.5.2", defaults=dict(device_platform=ios_xe))
+
+
 @receiver(pre_delete, sender="nautobot_device_lifecycle_mgmt.SoftwareLCM")
 def delete_softwarelcm_relationships(sender, instance, **kwargs):  # pylint: disable=unused-argument
     """Delete all SoftwareLCM relationships to Device and InventoryItem objects."""

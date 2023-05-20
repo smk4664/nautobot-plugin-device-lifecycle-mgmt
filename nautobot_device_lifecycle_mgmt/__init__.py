@@ -34,9 +34,11 @@ class DeviceLifeCycleConfig(PluginConfig):
 
     def ready(self):
         """Register custom signals."""
-        from .signals import post_migrate_create_relationships  # pylint: disable=import-outside-toplevel
+        from .signals import post_migrate_create_relationships, post_migrate_create_jobhook, post_migrate_create_manufacturers_platforms_and_softwares  # pylint: disable=import-outside-toplevel
 
         nautobot_database_ready.connect(post_migrate_create_relationships, sender=self)
+        nautobot_database_ready.connect(post_migrate_create_jobhook, sender=self)
+        nautobot_database_ready.connect(post_migrate_create_manufacturers_platforms_and_softwares, sender=self)
 
         super().ready()
 
